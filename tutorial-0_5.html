@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Tutorial 0.5</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@650&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="./site.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div class="content-area retro-border">
+        <h1>OpenGL Retro Voxel Renderer Tutorial</h1>
+        <h3>By Harrison B</h3>
+        <br>
+        <h2>0.5 - Totally Not Fun GLFW and GLEW Setup</h2>
+        <div class="nav-menu">
+            <div style="display:inline-block;width: 100%;"></div>
+            <a href="./tutorial-0.html" class="link">Previous</a>
+            <a href="./index.html" class="link">Contents</a>
+            <a href="./tutorial-1.html" class="link">Next</a>
+            <div style="display:inline-block;width: 100%;"></div>
+        </div>
+
+        <h4>Starting Out</h4>
+        <p class="text-area">I'm using Sublime Text and MinGW-w64 to write and compile the code for this project. In this tutorial, I will describe the basic setup steps for the compiler and libraries we will be using. To be clear, this portion of the tutorial series is completely optional! You are free to choose whatever compiler and IDE you would like to build the project files with and use whatever precompiled libraries you want. I just can't guarantee that everything will work correctly if you do because I don't understand how compilers work. But you probably know what you're doing. Anyway...</p>
+
+        <p class="text-area">A text editor and a compiler. Okay, what else? Well, it's common for OpenGL projects to reference dependencies like GLFW or GLUT. GLFW and GLUT are windowing libraries that will greatly facilitate the process of opening a window in a cross-platform sort of way, in addition to providing an OpenGL context for us to work inside. I've decided on GLFW for this series. OpenGL projects also commonly reference dependencies like GLEW or GLAD. GLEW and GLAD are libraries that can load OpenGL extensions on the fly. Without a library like this, there is a lot of manual labor to be done to ensure that you can use modern OpenGL functions in your application. I've decided on GLEW for this series. GLM (OpenGL Mathematics) is another extremely useful library I will be including in our list of dependencies because it defines a whole host of classes and functions for doing computer graphics math. Do you feel like writing your own matrix and vector math library? Maybe. But let's keep it simple for now. Lastly, I'm including LodePNG because we'll need a lightweight library for loading textures. That'll be all! Phew. Oh, and make sure you have CMake installed.</p>
+
+        <p class="text-area">Here's everything we'll need to create this project from scratch (if the links are broken, you'll have to pioneer uncharted internet territory by yourself, sorry):</p>
+
+        <p class="text-area"></p>
+
+        <ul class="bullet text-area">
+            <li><a target="_blank" href="https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/7.3.0/threads-posix/seh/x86_64-7.3.0-release-posix-seh-rt_v5-rev0.7z" class="link">MinGW-w64 7.3.0</a></li>
+            <li><a target="_blank" href="https://github.com/glfw/glfw/releases/download/3.3.6/glfw-3.3.6.zip" class="link">GLFW 3.3.6</a></li>
+            <li><a target="_blank" href="https://sourceforge.net/projects/glew/files/glew/2.1.0/glew-2.1.0.zip/download" class="link">GLEW 2.1.0</a></li>
+            <li><a target="_blank" href="https://github.com/g-truc/glm/releases/download/0.9.9.8/glm-0.9.9.8.zip" class="link">GLM 0.9.9.8</a></li>
+            <li><a target="_blank" href="https://raw.githubusercontent.com/lvandeve/lodepng/master/lodepng.h" class="link">LodePNG header file</a></li>
+            <li><a target="_blank" href="https://raw.githubusercontent.com/lvandeve/lodepng/master/lodepng.cpp" class="link">LodePNG source file</a></li>
+        </ul>
+
+        <p class="text-area">Once you've downloaded all these files, start by creating a project folder for all your future source code. I recommend using a cloud drive so that you don't lose your work unexpectedly. Just speaking from experience.</p>
+
+        <h4>MinGW Installation</h4>
+        <p class="text-area">MinGW is easy to install provided you use the link above. Open the archive you've downloaded to reveal the contained folder <mark>mingw64</mark>. For our purposes, you can install it simply by copying that folder into your <mark>C:</mark> drive. Add the path <mark>C:/<wbr>mingw64/<wbr>bin</mark> to your system's <mark>Path</mark> environmental variable. From the folder <mark>C:/<wbr>mingw64/<wbr>bin</mark>, copy <mark>libgcc_<wbr>s_<wbr>seh-1.<wbr>dll</mark>, <mark>libstd<wbr>c++-6.<wbr>dll</mark>, and <mark>libwin<wbr>pthread-1.<wbr>dll</mark> to your project folder. Done!</p>
+
+        <h4>GLFW Installation</h4>
+        <p class="text-area">Do you want to compile GLFW from scratch? Me neither. Let's do it. Download the GLFW 3.3.6 source archive from glfw.<wbr>org. Open the archive and copy the folder <mark>glfw-3.3.6</mark> to your <mark>C:</mark> drive. Open the CMake GUI and set the field 'Where is the source code' to <mark>C:/<wbr>glfw-3.3.6</mark>. Set the field 'Where to build the binaries' to <mark>C:/<wbr>glfw-3.3.6/<wbr>binaries</mark>. Click 'Configure' and then 'Yes' if prompted to create the new directory. For the generator, select 'MinGW Makefiles' and check 'Use default native compilers'. Click 'Finish'. Check the box that says <mark>BUILD_SHARED_LIBS</mark>. This will instruct the compiler to generate a dynamic link library for GLFW. Click 'Generate'. Navigate to <mark>C:/<wbr>glfw-3.3.6/<wbr>binaries</mark> and open a CMD console in this directory. Run the command <mark>mingw32-make</mark>. You have now built the GLFW source code! Create a new directory <mark>C:/<wbr>glfw-3.3.6/<wbr>lib</mark>. Copy <mark>C:/<wbr>glfw-3.3.6/<wbr>binaries/<wbr>src/<wbr>libglfw3dll.a</mark> to <mark>C:/<wbr>glfw-3.3.6/<wbr>lib</mark>. Copy <mark>C:/<wbr>glfw-3.3.6/<wbr>binaries/<wbr>src/<wbr>glfw3.<wbr>dll</mark> to your project folder. That's all!</p>
+
+        <h4>GLEW Installation</h4>
+        <p class="text-area">Alright, same stuff as before. Download the GLEW 2.1.0 source archive from glew.<wbr>sourceforge.<wbr>net. Open the archive and copy the folder <mark>glfw-3.3.6</mark> to your <mark>C:</mark> drive. Open the CMake GUI and set the field 'Where is the source code' to <mark>C:/<wbr>glew-2.1.0/<wbr>build/<wbr>cmake</mark>. Set the field 'Where to build the binaries' to <mark>C:/<wbr>glew-2.1.0/<wbr>binaries</mark>. Click 'Configure' and then 'Yes' if prompted to create the new directory. For the generator, select 'MinGW Makefiles' and check 'Use default native compilers'. Click 'Finish' and then 'Generate'. Navigate to <mark>C:/<wbr>glew-2.1.0/<wbr>binaries</mark> and open a CMD console in this directory. Run the command <mark>mingw32-make</mark>. GLEW is compiled! From the directory <mark>C:/<wbr>glew-2.1.0/<wbr>binaries/<wbr>lib</mark>, copy <mark>libglew32.a</mark> and <mark>libglew32.<wbr>dll.a</mark> to <mark>C:/<wbr>glew-2.1.0/<wbr>lib</mark>. Finally, copy <mark>C:/<wbr>glew-2.1.0/<wbr>binaries/<wbr>bin/<wbr>glew32.<wbr>dll</mark> to your project folder. Done and done! You can now relax because the rest of the setup is a breeze.</p>
+
+        <h4>GLM Installation</h4>
+        <p class="text-area">Oh how grateful am I that GLM is a header-only library. No compilation required! Download the GLM library from github.<wbr>com/<wbr>g-truc/<wbr>glm. Open the archive and copy the outermost <mark>glm</mark> folder to your <mark>C:</mark> drive.</p>
+
+        <h4>LodePNG Installation</h4>
+        <p class="text-area">LodePNG installation is super quick. The site lodev.<wbr>org/<wbr>lodepng hosts <mark>lodepng.h</mark> and <mark>lodepng.cpp</mark> which contain all of the code necessary to load PNG images. Create the directories <mark>C:/<wbr>lodepng/<wbr>include</mark> and <mark>C:/<wbr>lodepng/<wbr>object</mark>. Download the header and source files, placing the header into the <mark>include</mark> directory and the source file into the <mark>object</mark> directory. While we could build this source file into our application every time, it makes more sense to precompile it into an object file. Open a CMD console in the <mark>C:/<wbr>lodepng/<wbr>object</mark> directory. Run the command <mark>g++ -c -I"../include" lodepng.cpp</mark>. This will create an object file called <mark>lodepng.o</mark>, which can then be statically linked into our application later. Go ahead and delete <mark>lodepng.cpp</mark>. That's the last of our libraries!</p>
+
+        <br>
+        <div class="nav-menu">
+            <a href="./tutorial-0.html" class="link">Previous</a>
+            <a href="./index.html" class="link">Contents</a>
+            <a href="./tutorial-1.html" class="link">Next</a>
+            <div style="display:inline-block;width: 100%;"></div>
+        </div>
+    </div>
+</body>
+
+</html>

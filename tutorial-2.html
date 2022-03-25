@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Tutorial 2</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@650&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="./site.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/base16/rebecca.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/languages/cpp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/languages/dos.min.js"></script>
+    <script>hljs.highlightAll();</script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div class="content-area retro-border">
+        <h1>OpenGL Retro Voxel Renderer Tutorial</h1>
+        <h3>By Harrison B</h3>
+        <br>
+        <h2>2 - All the Noise, Noise, Noise, Noise</h2>
+        <div class="nav-menu">
+            <div style="display:inline-block;width: 100%;"></div>
+            <a href="./tutorial-1.html" class="link">Previous</a>
+            <a href="./index.html" class="link">Contents</a>
+            <a href="" class="link">Next</a>
+            <div style="display:inline-block;width: 100%;"></div>
+        </div>
+
+        <h4>How to Generate Random Noise</h4>
+
+        <p class="text-area">You can't generate random terrain without a random number generator!</p>
+
+        <img src="./img/grinch.gif" class="retro-border image-small">
+
+        <p class="text-area">We're going to need a way to generate noise based on a given XY coordinate pair. A traditional random number generator will not suffice for generating random terrain. This is because we need to be able to generate an arbitrary piece of voxel terrain without knowing anything about the surrounding terrain. In other words, our random number generator will not be sequential; we will be able to supply it any XY pair at any time to receive the random number associated with it.
+
+        <p class="text-area">Before we can implement any form of smooth noise ideal for terrain generation, we'll need to find a way to implement value noise, which looks like completely unstructured TV static. Imagine an image where each pixel is a random shade between black and white.</p>
+
+        <p class="text-area">We're looking for a function that can generate a pseudorandom integer from two other integers, which will generate the same output every time for a given input. Does this property remind you of anything? If you're thinking of a hash function, you're on the right track! Hash functions don't have to be random, but they can be. Maybe something like this:</p>
+
+<pre class="retro-border"><code class="language-cpp code-area">int hash(int x, int y) {
+    // Return some combination of x and y?
+}</code></pre>
+
+        <p class="text-area">If you know how to do this already, go ahead and design the function yourself! I had to spend a bit of time thinking of techniques because I'm slow.</p>
+
+        <p class="text-area">We want to take advantage of something called the <a target="_blank" href="https://en.wikipedia.org/wiki/Avalanche_effect" class="link">avalanche effect</a>, where small changes to the input integers lead to a vastly different output. An easy way to observe pseudorandomness is by multiplying numbers repeatedly. Let's inspect the middle digits of the number 7<sup>100</sup>, for example. The middle 20 digits are: 16810857203198904625. On the other hand, the middle 20 digits of 7<sup>101</sup> are: 17676000422392332377. Almost every digit is different between these two integers. Pretty random looking (and avalanche effect-y)! What we find is that repeated multiplication involves carrying digits several times over in a very unpredictable way (unless you're multiplying by the same base of course). We can make good use of this concept!</p>
+
+        <p class="text-area">In our example, while powers of 7 do exhibit randomness in their base 10 digits, there are some limitations. As it turns out, not every possible combination of the first N digits can occur. What I mean by this is that all powers of 7 end in either 07, 49, 43, or 01. The pseudorandomness is less convincing for the least significant digits because they cycle more often. Our random number generator will take advantage of the most significant digits for this reason.</p>
+
+        <p class="text-area">A noise function like this doesn't really need to be part of an instantiable class, but we can make it part of a singleton to stay organized. Let's create a class outline in <mark>Noise.h</mark>:</p>
+
+<pre class="retro-border"><code class="language-cpp code-area">#ifndef NOISE_H
+#define NOISE_H
+
+#include &lt;cstdint&gt;
+
+class Noise {
+public:
+    static int hashInt(int x);
+    static int hashInt2(int x, int y);
+private:
+};
+
+#endif</code></pre>
+
+        <p class="text-area">It will be helpful later to have a random number generator for a single integer too, so we have both <mark>hashInt()</mark> and <mark>hashInt2()</mark>.</p>
+
+        <p class="text-area">In <mark>Noise.cpp</mark>, the first thing I want to do is convert the input integers to unsigned integers so that there's no confusion about the sign bit (we will be doing some bitwise operations). Let's start with <mark>hashInt()</mark>:</p>
+
+<pre class="retro-border"><code class="language-cpp code-area">int Noise::hashInt(int x) {
+    const uint32_t ux = static_cast&lt;uint32_t&gt;(x);
+}</code></pre>
+
+        <p class="text-area">Let's try something simple. We take the integer, multiply it by some other integer, and then combine the upper 16 bits with the lower 16 bits using a bitwise XOR:</p>
+
+<pre class="retro-border"><code class="language-cpp code-area">int Noise::hashInt(int x) {
+    const uint32_t ux = static_cast&lt;uint32_t&gt;(x);
+
+    uint32_t hash = ux;
+    hash *= 84623;
+    hash ^= hash &gt;&gt; 16;
+
+    return static_cast&lt;int&gt;(hash);
+}</code></pre>
+
+        <p class="text-area">If we use this to generate a grayscale image pixel-by-pixel, we get this:</p>
+        <img src="./img/noise-test-1.png" class="retro-border image-small pixelated">
+
+        <p class="text-area">Uhh... not very random. We can do better! Let's try adding another pass:</p>
+
+<pre class="retro-border"><code class="language-cpp code-area">int Noise::hashInt(int x) {
+    const uint32_t ux = static_cast&lt;uint32_t&gt;(x);
+
+    uint32_t hash = ux;
+    hash *= 84623;
+    hash ^= hash &gt;&gt; 16;
+    hash *= 84623;
+    hash ^= hash &gt;&gt; 16;
+
+    return static_cast&lt;int&gt;(hash);
+}</code></pre>
+
+        <p class="text-area">Using this function to generate an image pixel-by-pixel produces this:</p>
+        <img src="./img/noise-test-2.png" class="retro-border image-small pixelated">
+
+        <p class="text-area">Much better! Where did 84623 come from though? Nowhere, I just wanted a random large number to multiply by and scramble bits around. Truly this number should be even larger (take up all 4 bytes of the integer) to guarantee maximum bit scrambling. The number we use should be large, have a uniform bit distribution, and not be a multiple of 2. If the number has one or more factors of 2, it will simply shift the input integer to the left and we'll lose information. Hash functions often use a prime number for this purpose too, so we might as well do that.</p>
+
+        <p class="text-area">Here's how I came up with a random prime number. Step one is to type out 32 bits randomly into Wolfram Alpha to get some uniform bit distribution, and Wolfram Alpha will automatically convert this to base 10:</p>
+        <img src="./img/to-decimal.png" class="retro-border image-small">
+
+        <p class="text-area">Next, we can just copy the decimal form of this binary number and find all the primes nearby:</p>
+        <img src="./img/primes-near.png" class="retro-border image-small">
+
+        <p class="text-area">Now we can just choose the first prime in the list! I've converted that number to hex for compactness and inserted it into the program like so:</p>
+
+<pre class="retro-border"><code class="language-cpp code-area">constexpr uint32_t PRIME = 0xab8ab905;
+
+int Noise::hashInt(int x) {
+    const uint32_t ux = static_cast&lt;uint32_t&gt;(x);
+
+    uint32_t hash = ux;
+    hash *= PRIME;
+    hash ^= hash &gt;&gt; 16;
+    hash *= PRIME;
+    hash ^= hash &gt;&gt; 16;
+    hash &= 0x7fffffff;
+
+    return static_cast&lt;int&gt;(hash);
+}</code></pre>
+
+        <p class="text-area">We also remove the sign bit before converting the hash back into a regular integer using the operation <mark>&= 0x7fffffff</mark>. And it's still working as expected:</p>
+        <img src="./img/noise-test-3.png" class="retro-border image-small pixelated">
+
+        <p class="text-area">In the definition of <mark>hashInt2()</mark>, we can use the same prime number to combine a second integer into the hash:</p>
+
+<pre class="retro-border"><code class="language-cpp code-area">int Noise::hashInt2(int x, int y) {
+    const uint32_t ux = static_cast&lt;uint32_t&gt;(x);
+    const uint32_t uy = static_cast&lt;uint32_t&gt;(y);
+
+    uint32_t hash = ux * PRIME + uy;
+    hash *= PRIME;
+    hash ^= hash &gt;&gt; 16;
+    hash *= PRIME;
+    hash ^= hash &gt;&gt; 16;
+    hash &= 0x7fffffff;
+
+    return static_cast&lt;int&gt;(hash);
+}</code></pre>
+
+        <p class="text-area">Isn't that exciting? It's so easy to introduce randomness into your program! Tell me if you know of an even easier way. But the point is, when it comes to terrain generation, we will be able to generate random numbers for any block given just their coordinates! And we know it is entirely deterministic and will give us the same result for the same coordinate pair every time.</p>
+
+        <p class="text-area">Click 'Next' to learn about Perlin noise: the most convenient method for generating smooth noise ever!</p>
+
+        <br>
+        <div class="nav-menu">
+            <a href="./tutorial-1.html" class="link">Previous</a>
+            <a href="./index.html" class="link">Contents</a>
+            <a href="" class="link">Next</a>
+            <div style="display:inline-block;width: 100%;"></div>
+        </div>
+    </div>
+</body>
+
+</html>

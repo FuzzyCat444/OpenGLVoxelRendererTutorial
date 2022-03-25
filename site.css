@@ -1,0 +1,174 @@
+html, body {
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background-color: #003f00;
+}
+
+.content-area {
+    height: 100%;
+    overflow-y: auto;
+    margin: 0;
+    box-sizing: border-box;
+    padding: 0 10vw 5vh 10vw;
+    text-align: center;
+}
+
+h1, h2, h3, h4, .link, .text-area {
+    color: #a0cf0a;
+    font-family: "Source Code Pro";
+    text-shadow: 1px 1px 5px #000000;
+}
+
+h1 {
+    font-size: 50px;
+    text-align: center;
+}
+
+h2 {
+    font-size: 30px;
+    text-align: center;
+}
+
+h3 {
+    font-size: 20px;
+    text-align: center;
+}
+
+h4 {
+    font-size: 30px;
+    text-align: left;
+}
+
+.text-area {
+    font-size: 20px;
+    text-align: justify;
+    line-height: 1.5;
+}
+
+.bullet {
+    padding-left: 3em;
+    line-height: 2.5;
+}
+
+.link {
+    font-size: 20px;
+}
+
+.link:hover {
+    color: #8cbf0a;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.toc {
+    display: inline-block;
+    text-align: left;
+}
+
+.toc p {
+    margin: 30px 20px 30px 20px;
+}
+
+.nav-menu {
+    text-align: justify;
+    width: 100%;
+}
+
+.retro-border {
+    border-width: 20px;
+    border-image-width: 20px;
+    border-image-source: url(./ninepatch.png);
+    border-image-slice: 132 fill;
+    border-image-repeat: round;
+    border-style: solid;
+    box-sizing: border-box;
+}
+
+.video {
+    max-width: 800px;
+    width: 80%;
+    aspect-ratio: 16/9;
+    margin: auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.image-large {
+    max-width: 800px;
+    width: 80%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.image-small {
+    max-width: 400px;
+    width: 80%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.pixelated {
+    image-rendering: pixelated;
+}
+
+.code-area {
+    text-align: left;
+    font-family: Source Code Pro;
+    font-size: 16px;
+}
+
+.wrap {
+    white-space: pre-wrap;
+}
+
+mark {
+    border-radius: 8px; 
+    box-shadow: 1px 1px 5px #000000;
+    padding: 0 5px 0 5px;
+    text-shadow: none;
+    color: #003f00; 
+    background-color: #a0cf0a;
+}
+
+@media screen and (max-width: 800px) {
+    h1 {
+    font-size: 40px;
+    }
+    h2 {
+        font-size: 20px;
+    }
+    h3 {
+        font-size: 15px;
+    }
+    h4 {
+        font-size: 20px;
+    }
+    .content-area {
+        padding: 0 3vw 5vh 3vw;
+    }
+    .text-area {
+        font-size: 14px;
+    }
+    .link {
+        font-size: 14px;
+    }
+    .retro-border {
+        border-width: 12px;
+        border-image-width: 12px;
+    }
+    h1, h2, h3, h4, .link, .text-area {
+        text-shadow: 0.75px 0.75px 3px #000000;
+    }
+    .code-area {
+        font-size: 12px;
+    }
+    mark {
+        border-radius: 5px; 
+        box-shadow: 0.75px 0.75px 3px #000000;
+        padding: 0 3.5px 0 3.5px;
+    }
+}

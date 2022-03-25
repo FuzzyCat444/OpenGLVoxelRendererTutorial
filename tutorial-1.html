@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Tutorial 1</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@650&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="./site.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/base16/rebecca.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/languages/cpp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/languages/dos.min.js"></script>
+    <script>hljs.highlightAll();</script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div class="content-area retro-border">
+        <h1>OpenGL Retro Voxel Renderer Tutorial</h1>
+        <h3>By Harrison B</h3>
+        <br>
+        <h2>1 - Building Our GLFW Application</h2>
+        <div class="nav-menu">
+            <div style="display:inline-block;width: 100%;"></div>
+            <a href="./tutorial-0_5.html" class="link">Previous</a>
+            <a href="./index.html" class="link">Contents</a>
+            <a href="./tutorial-2.html" class="link">Next</a>
+            <div style="display:inline-block;width: 100%;"></div>
+        </div>
+
+        <h4>The App Class</h4>
+        <p class="text-area">Before we move on, you've got MinGW-w64, GLFW, GLEW, GLM, and LodePNG all installed on your <mark>C:</mark> drive, right? And you placed <mark>libgcc_<wbr>s_<wbr>seh-1.<wbr>dll</mark>, <mark>libstd<wbr>c++-6.<wbr>dll</mark>, <mark>libwin<wbr>pthread-1.<wbr>dll</mark>, <mark>glfw3.<wbr>dll</mark>, and <mark>glew32.<wbr>dll</mark> into your newly created project folder? Then we're all set to begin coding!</p>
+        <p class="text-area">Let's create a <mark>main.cpp</mark> file in the project folder real quick:</p>
+
+<pre class="retro-border"><code class="language-cpp code-area">#include "App.h"
+
+int main()
+{
+    App* app = new App(800, 600);
+    app->start();
+    delete app;
+    return 0;
+}</code></pre>
+
+        <p class="text-area">It's nice not to have a disorganized mess in the main source file. Better to have a disorganized mess in a dedicated class, no? Here we're imagining that we have a class called <mark>App</mark> containing all our application functionality. This class is then instantiated with a width and height, launched, and deleted upon completion.</p>
+
+        <p class="text-area">Create the file <mark>App.h</mark> in your project folder. Let's begin with a basic class outline like so:</p>
+<pre class="retro-border"><code class="language-cpp code-area">#ifndef APP_H
+#define APP_H
+
+#define GLFW_DLL
+#include &lt;GLFW/glfw3.h&gt;
+
+#include &lt;iostream&gt;
+
+class App {
+public:
+    App(int width, int height);
+    virtual ~App();
+    
+    void start();
+private:
+    void update(float delta);
+
+    GLFWwindow* window;
+    int width;
+    int height;
+    float aspect;
+};
+
+#endif</code></pre>
+
+        <p class="text-area">We've defined <mark>GLFW_DLL</mark> before including the GLFW header because we're using the shared library; this is quite necessary. So far we've only declared two class methods: <mark>start()</mark> and <mark>update()</mark>. <mark>start()</mark> will be responsible for initializing our libraries, opening a window, and running the main loop. <mark>update()</mark> is a private method that will be called in every iteration of the main loop to update the application state before the rendering stage. Finally, we declare private member variables to hold a pointer to a <mark>GLFWwindow</mark> instance, the window dimensions, and window aspect ratio.</p>
+        <p class="text-area">Side note: I like to make all destructors virtual because deleting an object in the form of its superclass pointer will not call the subclass's destructor. Making a destructor virtual guarantees it can be overridden in a polymorphic way.</p>
+
+        <p class="text-area">Let's flesh out this class a bit and define all its functions in a new file <mark>App.cpp</mark>:</p>
+<pre class="retro-border"><code class="language-cpp code-area">#include "App.h"
+
+App::App(int width, int height)
+: width(width), height(height), 
+  aspect(static_cast&lt;float&gt;(width) / static_cast&lt;float&gt;(height)) {
+    
+}
+
+App::~App() {
+    
+}
+
+void App::start() {
+    if (!glfwInit()) {
+        std::cout &lt;&lt; "Could not initialize GLFW!" &lt;&lt; std::endl;
+    }
+    
+    window = glfwCreateWindow(width, height, "Voxels", nullptr, nullptr);
+    if (!window) {
+        std::cout &lt;&lt; "Could not open a GLFW window!" &lt;&lt; std::endl; 
+        glfwTerminate();
+    }
+    
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(0);
+    
+    double startTime = glfwGetTime();
+    while (!glfwWindowShouldClose(window)) {
+        const double endTime = glfwGetTime();
+        const float delta = static_cast&lt;float&gt;(endTime - startTime);
+        startTime = endTime;
+        
+        update(delta);
+        
+        glClearColor(0.7f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glfwSwapBuffers(window);
+        
+        glfwPollEvents();
+    }
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
+}
+
+void App::update(float delta) {
+    
+}</code></pre>
+        <p class="text-area">In the <mark>App</mark> constructor, we initialize the <mark>width</mark>, <mark>height</mark>, and <mark>aspect</mark> class variables using a member initializer list. I'm going to try and retain the habit of using <mark>static_cast</mark> where appropriate instead of C-style casts or implicit casts. For simplicity, I'll make exceptions when calling OpenGL functions.</p>
+
+        <p class="text-area">I don't know about you, but I don't care for proper error handling, so we're just going to print a simple message when something fails. We first initialize GLFW and create a window with the title "Voxels", before calling <mark>glfwMakeContextCurrent()</mark> on our window. We're only using one window, so we call this function once, but an application with multiple windows would require switching OpenGL contexts more frequently. We then set the swap interval to 0 to allow for the maximum framerate possible, without considering VSync.</p>
+
+        <p class="text-area">I get the feeling you've created a game loop before, but let's walk through it anyway. The following loop iterates while the current window is open, and we calculate the time difference between frames as a floating point number representing the number of seconds that have passed, <mark>delta</mark>. We pass <mark>delta</mark> to the <mark>update()</mark> function, which will update the application state (e.g. camera position) based on how much time has passed in the previous frame. We then invoke OpenGL functions to clear the color buffer to a medium red before instructing GLFW to show the rendered frame and polling for new window/input events.</p>
+
+        <h4>Wrapping Up</h4>
+        <p class="text-area">Well, it's not going to compile itself! To make our code easier to compile in the future, let's create a very simple batch file to invoke the compiler on our source files. Create and open the file <mark>build.bat</mark> in your text editor. Enter these commands:</p>
+
+<pre class="retro-border"><code class="language-dos code-area wrap">g++ -O3 -o App -I"C:/glfw-3.3.6/include" -I"C:/glew-2.1.0/include" -I"C:/lodepng/include" -I"C:/glm" -L"C:/glfw-3.3.6/lib" -L"C:/glew-2.1.0/lib" main.cpp App.cpp "C:/lodepng/object/lodepng.o" -lglfw3dll -lglew32 -lglew32.dll -lopengl32 -lgdi32
+    
+pause</code></pre>
+
+        <p class="text-area">Notice the only source files listed in the first command are <mark>main.cpp</mark> and <mark>App.cpp</mark>. The first <mark>-O3</mark> flag hints at the compiler to maximally optimize the resulting machine code. The <mark>-o App</mark> ensures that we get an executable named <mark>App.exe</mark>. The <mark>-I</mark> and <mark>-L</mark> flags tell the compiler where to find include and library directories. You can see that at the end, we link each of the compiled library files from GLFW and GLEW, as well as <mark>-lopengl32</mark>. Finally, notice that we link the precompiled LodePNG object file from earlier.</p>
+
+        <p class="text-area">You can just double click your new <mark>build.bat</mark> file to execute it, and after a few seconds our <mark>App.exe</mark> executable appears. This is what you should see upon running the compiled application:</p>
+
+        <img src="./img/red-window.png" class="retro-border image-large">
+
+        <p class="text-area">Et voilà! Not bad right? Click 'Next' to start learning about noise! I think we've earned a break from OpenGL and windowing.</p>
+
+        <br>
+        <div class="nav-menu">
+            <a href="./tutorial-0_5.html" class="link">Previous</a>
+            <a href="./index.html" class="link">Contents</a>
+            <a href="./tutorial-2.html" class="link">Next</a>
+            <div style="display:inline-block;width: 100%;"></div>
+        </div>
+    </div>
+</body>
+
+</html>
