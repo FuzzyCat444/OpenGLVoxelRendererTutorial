@@ -81,7 +81,7 @@ h4 {
 .retro-border {
     border-width: 20px;
     border-image-width: 20px;
-    border-image-source: url(./ninepatch.png);
+    border-image-source: url(./img/ninepatch.png);
     border-image-slice: 132 fill;
     border-image-repeat: round;
     border-style: solid;
