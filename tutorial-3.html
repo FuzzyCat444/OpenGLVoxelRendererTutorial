@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Tutorial 3</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@650&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="./site.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/base16/rebecca.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/languages/cpp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/languages/dos.min.js"></script>
+    <script>hljs.highlightAll();</script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div class="content-area retro-border">
+        <h1>OpenGL Retro Voxel Renderer Tutorial</h1>
+        <h3>By Harrison B</h3>
+        <br>
+        <h2>3 - Ken Perlin Saves the Day</h2>
+        <div class="nav-menu">
+            <div style="display:inline-block;width: 100%;"></div>
+            <a href="./tutorial-2.html" class="link">Previous</a>
+            <a href="./index.html" class="link">Contents</a>
+            <a href="" class="link">Next</a>
+            <div style="display:inline-block;width: 100%;"></div>
+        </div>
+
+        <h4>The Challenge of Smooth Noise</h4>
+        <p class="text-area">What, you want your noise to be 'smooth' now? Was value noise not good enough? I happen to think it looked rather nice:</p>
+        <img src="./img/rough-terrain.png" class="retro-border image-large">
+
+        <p class="text-area">No? Okay. Well, we're going to need a different approach then. We still want a grid-based noise generator where we can pass a coordinate pair to a function to get a random value, but it would be nice if we could choose values in between those integer coordinates. If we could smoothly interpolate to find a value that is a sort of weighted combination of neighboring random values and is continuous, that would be just perfect. One might consider bilinear filtering to smooth out value noise, but this is only half of a solution and leaves a lot to be desired:</p>
+        <img src="./img/noise-bilinear.png" class="retro-border image-small">
+
+        <p class="text-area">Sure it looks smoother, but it's still quite rough and so obviously aligned to a grid. I have to give credit to this solution though because upon adding different octaves of this linearly filtered noise together, you can still achieve some impressive textures:</p>
+        <img src="./img/fractal-noise.png" class="retro-border image-small">
+        
+        <p class="text-area">It turns out that there is a more elegant solution along those lines, with a few key differences. It's called Perlin noise! You're probably familiar with Perlin noise and its ability to produce seamless and smooth grid-based noise like this:</p>
+        <img src="./img/perlin-example.png" class="retro-border image-small">
+
+
+        <br>
+        <div class="nav-menu">
+            <a href="./tutorial-2.html" class="link">Previous</a>
+            <a href="./index.html" class="link">Contents</a>
+            <a href="" class="link">Next</a>
+            <div style="display:inline-block;width: 100%;"></div>
+        </div>
+    </div>
+</body>
+
+</html>
