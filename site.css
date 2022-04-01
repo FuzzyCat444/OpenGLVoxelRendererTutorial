@@ -101,6 +101,20 @@ h4 {
     max-width: 800px;
     width: 80%;
     aspect-ratio: 16/9;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.math {
+    display: inline-block;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.math-content {
+    background-color: white;
+    display: inline-block;
+    padding: 10px 20px 10px 20px;
 }
 
 .image-large {

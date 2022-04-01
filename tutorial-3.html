@@ -17,6 +17,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/languages/dos.min.js"></script>
     <script>hljs.highlightAll();</script>
 
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
@@ -49,6 +51,45 @@
         <p class="text-area">Now that's SMOOTH! Why wouldn't we use Perlin noise?! One thing that might scare people away when trying to learn Perlin noise is the mention of... dot products... and derivatives... <em>shudder</em>. Truthfully though, there's nothing complicated going on as far as linear algebra and calculus goes.</p>
 
         <h4>Perlin Noise: A One Dimensional Analog</h4>
+        <p class="text-area">Let me show you what Perlin noise could look like in one dimension instead of two to ultra-simplify things! Imagine a graph with its x axis divided into equal intervals of one, and a line with a random slope passing through each number on the axis. Like this:</p>
+        <img src="./img/line-graph.png" class="retro-border image-large">
+        <p class="text-area">If we know the equation of each line, it is really easy to find a y coordinate on the line given an x coordinate. The lines in the image above could be expressed like this:</p>
+
+        <div><div class="retro-border math"><div class="math-content">
+        $$\large{y=Ax}$$ 
+        $$\large{y=B(x-1)}$$
+        $$\large{y=C(x-2)}$$
+        $$\large{y=D(x-3)}$$ 
+        </div></div></div>
+
+        <p class="text-area">Where <mark>\(A\)</mark>, <mark>\(B\)</mark>, <mark>\(C\)</mark>, and <mark>\(D\)</mark> are the slopes of each line. In this example, <mark>\(A=1.4\)</mark>, <mark>\(B=-3.8\)</mark>, <mark>\(C=-1.5\)</mark>, and <mark>\(D=-0.4\)</mark>. Now we have a bunch of lines with random slopes passing through the x axis. So what? Well, imagine that each line defines a unique segment of our overall Perlin function (without considering smoothness). If we just sampled the nearest line in each interval to define our Perlin function, it would look like this:</p>
+        <img src="./img/perlin-nearest.png" class="retro-border image-large">
+
+        <p class="text-area">Putting a lot of these lines together would give us a very random function. But we don't want our Perlin function to have gaps. What if instead of simply selecting the nearest line in an interval, we took the weighted average of two lines based on the x coordinate (i.e. linear interpolation)? We get this:</p>
+        <img src="./img/perlin-linear.png" class="retro-border image-large">
+
+        <p class="text-area">Now we are getting somewhere! Each part of our Perlin function is connected with no gaps. Let's do an example of the above computation. Say we want to find the value at <mark>\(x=1.7\)</mark>. We know that we are dealing with the interval between <mark>\(x=1\)</mark> and <mark>\(x=2\)</mark> so we are focused on the line equations <mark>\(y=B(x-1)\)</mark> and <mark>\(y=C(x-2)\)</mark>. The value of <mark>\(y=B(x-1)\)</mark> at <mark>\(x=1.7\)</mark> is <mark>\((-3.8)(1.7-1)=-2.66\)</mark>. The value of <mark>\(y=C(x-2)\)</mark> at <mark>\(x=1.7\)</mark> is <mark>\((-1.5)(1.7-2)=0.45\)</mark>. Finally, we can average them by acknowledging that <mark>\(x=1.7\)</mark> is 70% of the way between <mark>\(x=1\)</mark> and <mark>\(x=2\)</mark>, so we can linearly interpolate by calculating <mark>\(-2.66+0.7\times(0.45-(-2.66))\)</mark>. This gives us a value of <mark>\(-0.483\)</mark>.</p>
+
+        <p class="text-area">The problem is that our Perlin function has humps that crease at the edge of each interval to create jaggedness that is very much <em>not</em> smooth. Instead of linearly interpolating, we need to use an ease-in ease-out curve that ensures the slope of each curved part is the same on each side of an interval edge (this is where derivatives come in).</p>
+
+        <p class="text-area">When we linearly interpolate between two values <mark>\(a\)</mark> and <mark>\(b\)</mark>, we compute <mark>\(a+t\times(b-a)\)</mark> where <mark>\(t\)</mark> is a percentage value between 0 and 1 determining how far along we are on the interval between <mark>\(a\)</mark> and <mark>\(b\)</mark>. Instead of using <mark>\(t\)</mark>, which looks like this:</p>
+        <img src="./img/graph-of-t.png" class="retro-border image-small">
+        <p class="text-area">We could instead use <mark>\(3t^2-2t^3\)</mark>, which looks like this:</p>
+        <img src="./img/graph-of-3t2-2t3.png" class="retro-border image-small">
+
+        <p class="text-area">Our new interpolation scheme, <mark>\(a+(3t^2-2t^3)\times(b-a)\)</mark>, would produce a Perlin function that looks like this when used for averaging lines together:</p>
+        <img src="./img/perlin-cubic.png" class="retro-border image-large">
+
+        <p class="text-area">Amazing! That's really all there is to it. We generate a bunch of random lines, and take a smooth weighted average of the two lines surrounding the interval of interest. That function <mark>\(3t^2-2t^3\)</mark> is what Ken Perlin calls a fade function. In general it needs to have a slope (first derivative) of 0 at <mark>\(t=0\)</mark> and <mark>\(t=1\)</mark> as well as be symmetrical about the point <mark>\((0.5,0.5)\)</mark>. Ken Perlin recommends choosing a function that also has a second derivative of 0 at the same points to prevent some visual artifacts that can occur with our current fade function. Ken Perlin's fade function <mark>\(6t^5-15t^4+10t^3\)</mark> looks like this:</p>
+        <img src="./img/graph-of-perlin-fade.png" class="retro-border image-small">
+
+        <p class="text-area">And the new Perlin function with this interpolation looks like this:</p>
+        <img src="./img/perlin-quintic.png" class="retro-border image-large">
+
+        <p class="text-area">It's more or less the same, right? Before we move on to Perlin noise in two dimensions, take a moment to play around with the slope sliders in the Desmos activity below to produce different noise functions:</p>
+
+        <p class="text-area"></p>
+
         <iframe src="./desmos.html" frameborder=0 class="retro-border desmos">
         </iframe>
 
